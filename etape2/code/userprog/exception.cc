@@ -1,4 +1,4 @@
-// exception.cc 
+// exception.cc
 //      Entry point into the Nachos kernel from user programs.
 //      There are two kinds of things that can cause control to
 //      transfer back to here from user code:
@@ -9,7 +9,7 @@
 //
 //      exceptions -- The user code does something that the CPU can't handle.
 //      For instance, accessing memory that doesn't exist, arithmetic errors,
-//      etc.  
+//      etc.
 //
 //      Interrupts (which can also cause control to transfer from user
 //      code into the Nachos kernel) are handled elsewhere.
@@ -18,12 +18,16 @@
 // Everything else core dumps.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
+
+#ifdef CHANGED
+void copyStringFromMachine(int from, char *to, unsigned size);
+#endif
 
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
@@ -55,12 +59,12 @@ UpdatePC ()
 //              arg3 -- r6
 //              arg4 -- r7
 //
-//      The result of the system call, if any, must be put back into r2. 
+//      The result of the system call, if any, must be put back into r2.
 //
 // And don't forget to increment the pc before returning. (Or else you'll
 // loop making the same system call forever!
 //
-//      "which" is the kind of exception.  The list of possible exceptions 
+//      "which" is the kind of exception.  The list of possible exceptions
 //      are in machine.h.
 //----------------------------------------------------------------------
 
@@ -68,19 +72,81 @@ void
 ExceptionHandler (ExceptionType which)
 {
     int type = machine->ReadRegister (2);
-
+#ifndef CHANGED
     if ((which == SyscallException) && (type == SC_Halt))
       {
 	  DEBUG ('a', "Shutdown, initiated by user program.\n");
 	  interrupt->Halt ();
       }
-    else
-      {
-	  printf ("Unexpected user mode exception %d %d\n", which, type);
-	  ASSERT (FALSE);
+#else
+
+	if (which == SyscallException) {
+        switch (type) {
+
+        case SC_Halt: {
+          DEBUG('a', "Shutdown, initiated by user program.\n");
+          interrupt->Halt();
+          break;
+        }
+
+        case SC_PutChar: {
+          DEBUG('a', "PutChar, initiated by user program.\n");
+          // On récupère le premier paramètre
+          char c = (char)(machine->ReadRegister(4));
+          // on l'affiche dans grâce à synchconsole
+          synchconsole->SynchPutChar(c);
+          break;
+        }
+        case SC_PutString: {
+				DEBUG('a', "PutString.\n");
+				char* str = new char[MAX_STRING_SIZE];
+				copyStringFromMachine(machine->ReadRegister(4), str, MAX_STRING_SIZE);
+				synchconsole->SynchPutString(str);
+				delete [] str;
+				break;
+		    }
+        case SC_PutInt: {
+          DEBUG('a', "PutInt, initiated by user program.\n");
+          // le premier est la valeur int
+          int value = machine->ReadRegister(4);
+          synchconsole->SynchPutInt(value);
+          break;
+        }
+
+        default: {
+          printf("Unexpected user mode exception %d %d\n", which, type);
+          ASSERT(FALSE);
+        }
       }
+    }
+    #endif
 
     // LB: Do not forget to increment the pc before returning!
     UpdatePC ();
     // End of addition
 }
+
+
+#ifdef CHANGED
+// copy a string from MIPS machine to Linux
+// copy at most size characters
+void copyStringFromMachine(int from, char *to, unsigned size)
+{
+	unsigned int i = 0;
+	int read = 0;
+	while (i < size)
+	{
+		if (machine->ReadMem(from + i, 1, &read))
+		{
+			to[i] = (char)read;
+			if (to[i] == '\0')
+				break;
+		}
+		i++;
+	}
+	if (i == size && to[i-1] != '\0')
+	{
+		to[i] = '\0';
+	}
+}
+#endif
