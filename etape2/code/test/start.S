@@ -129,6 +129,34 @@ Yield:
 	j	$31
 	.end Yield
 
+#ifdef CHANGED
+	
+.globl PutChar
+	.ent	PutChar
+PutChar:
+	addiu $2,$0,SC_PutChar
+	syscall
+	j	$31
+	.end PutChar
+
+.globl PutString
+	.ent	PutString
+PutString:
+	addiu $2,$0,SC_PutString
+	syscall
+	j	$31
+	.end PutString
+
+.globl PutInt
+	.ent	PutInt
+PutInt:
+	addiu $2,$0,SC_PutInt
+	syscall
+	j	$31
+	.end PutInt
+
+#endif
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main
