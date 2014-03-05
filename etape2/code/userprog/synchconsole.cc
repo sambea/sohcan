@@ -42,6 +42,11 @@ void SynchConsole::SynchPutChar(const char ch)
 	writeDone->P ();
 }
 
+char SynchConsole::SynchGetChar()
+{
+	readAvail->P ();
+	return console->GetChar ();
+}
 
 void SynchConsole::SynchPutString(const char s[])
 {
@@ -55,6 +60,36 @@ void SynchConsole::SynchPutString(const char s[])
 
 }
 
+void SynchConsole::SynchGetString(char *s, int n)
+{
+	stringRead->P();
+	int i = 0;
+	while (i < n)
+	{
+		s[i] = SynchGetChar();
+		if (s[i] == '\n' || s[i] == '\0' || s[i] == EOF)
+			break;
+		i++;
+	}
+	s[n-1] = '\0';
+	stringRead->V();
+}
+
+
+void SynchConsole::SynchGetString(char *s, int n,char delim)
+{
+	stringRead->P();
+	int i = 0;
+	while (i < n)
+	{
+		s[i] = SynchGetChar();
+		if (s[i] == delim || s[i] == '\0' || s[i] == EOF)
+			break;
+		i++;
+	}
+	s[n-1] = '\0';
+	stringRead->V();
+}
 
 void SynchConsole::SynchPutInt(int value) {
   char * buffer = new char[MAX_STRING_SIZE];
@@ -64,6 +99,14 @@ void SynchConsole::SynchPutInt(int value) {
   delete [] buffer;
 }
 
+int SynchConsole::SynchGetInt() {
+  int value;
+  char * buffer = new char[MAX_STRING_SIZE];
+  this->SynchGetString(buffer, MAX_STRING_SIZE, '\n');
+  sscanf(buffer, "%d", &value);
+  delete [] buffer;
+  return value;
+}
 
 #endif // CHANGED
 

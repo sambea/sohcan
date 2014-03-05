@@ -27,6 +27,7 @@
 
 #ifdef CHANGED
 void copyStringFromMachine(int from, char *to, unsigned size);
+void copyStringToMachine(char* from, int to, unsigned size);
 #endif
 
 //----------------------------------------------------------------------
@@ -97,6 +98,11 @@ ExceptionHandler (ExceptionType which)
           synchconsole->SynchPutChar(c);
           break;
         }
+        case SC_GetChar: {
+				DEBUG('a', "GetChar.\n");
+				machine->WriteRegister(2, (int)synchconsole->SynchGetChar());
+				break;
+			}
         case SC_PutString: {
 				DEBUG('a', "PutString.\n");
 				char* str = new char[MAX_STRING_SIZE];
@@ -105,11 +111,25 @@ ExceptionHandler (ExceptionType which)
 				delete [] str;
 				break;
 		    }
+        case SC_GetString: {
+				DEBUG('a', "GetString.\n");
+				char* str = new char[MAX_STRING_SIZE];
+				synchconsole->SynchGetString(str, (int) machine->ReadRegister(5));
+				copyStringToMachine(str, (int) machine->ReadRegister(4), (int) machine->ReadRegister(5));
+				delete [] str;
+				break;
+			}
         case SC_PutInt: {
           DEBUG('a', "PutInt, initiated by user program.\n");
           // le premier est la valeur int
           int value = machine->ReadRegister(4);
           synchconsole->SynchPutInt(value);
+          break;
+        }
+        case SC_GetInt: {
+          DEBUG('a', "GetInt, initiated by user program.\n");
+          int value = synchconsole->SynchGetInt();
+          machine->WriteRegister(2, value);
           break;
         }
 
@@ -148,5 +168,23 @@ void copyStringFromMachine(int from, char *to, unsigned size)
 	{
 		to[i] = '\0';
 	}
+}
+
+
+// copy a string from Linux to MIPS machine
+// copy at most size characters
+void copyStringToMachine(char* from, int to, unsigned size)
+{
+	unsigned int i = 0;
+	while (i < size)
+	{
+		if (from[i] == '\0' || from[i] == EOF)
+			break;
+		machine->WriteMem(to+i, 1, from[i]);
+		i++;
+	}
+	if (i == size)
+		machine->WriteMem(to+i, 1, (int)'\0');
+
 }
 #endif
