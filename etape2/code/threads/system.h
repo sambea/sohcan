@@ -8,6 +8,10 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
+#ifdef CHANGED
+#define MAX_STRING_SIZE 128
+#endif
+
 #include "copyright.h"
 #include "utility.h"
 #include "thread.h"
@@ -15,6 +19,7 @@
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
+
 
 // Initialization and cleanup routines
 extern void Initialize (int argc, char **argv);	// Initialization,
@@ -32,6 +37,10 @@ extern Timer *timer;		// the hardware alarm clock
 #ifdef USER_PROGRAM
 #include "machine.h"
 extern Machine *machine;	// user program memory and registers
+#ifdef CHANGED
+#include "../userprog/synchconsole.h"
+extern SynchConsole *synchconsole;
+#endif
 #endif
 
 #ifdef FILESYS_NEEDED		// FILESYS or FILESYS_STUB
