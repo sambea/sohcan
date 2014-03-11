@@ -1,0 +1,13 @@
+#include "syscall.h"
+
+void print()
+{
+    PutString("Allo la lune ici Houston !\n");
+}
+
+int main()
+{
+    print();
+    Halt();
+}
+
