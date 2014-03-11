@@ -103,8 +103,8 @@ ConsoleTest (char *in, char *out)
 	  console->PutChar('>');
           writeDone->P (); // wait for write to finish
 	  #endif
-	  /*if (ch == 'q')
-	      return;	*/	// if q, quit
+	  if (ch == 'q')
+	      return;		// if q, quit
       }
 }
 
