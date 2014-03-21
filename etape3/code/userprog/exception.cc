@@ -24,6 +24,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
+#include "userthread.h"
 
 #ifdef CHANGED
 void copyStringFromMachine(int from, char *to, unsigned size);
@@ -133,13 +134,33 @@ ExceptionHandler (ExceptionType which)
           break;
         }
 
+	case SC_UserThreadCreate: {	
+	 DEBUG('a', "UserThreadCreate.\n");	
+	 int res = do_UserThreadCreate((int) machine->ReadRegister(4), (int) machine->ReadRegister(5));
+	 machine->WriteRegister(2, res);
+	 break;
+	 }
+	case SC_UserThreadExit: {
+	 DEBUG('a', "UserThreadExit.\n");	
+	 do_UserThreadExit();	
+	 break;
+	 }
+	case SC_Exit: { 
+	 currentThread->space->DecrNumThreads(); 
+	 while (currentThread->space->GetNumThreads() != 0)
+	  currentThread->Yield();
+	  DEBUG('a', "Exit, initiated by user program\n");
+	  interrupt->Halt();
+	  break;
+         }
+
         default: {
           printf("Unexpected user mode exception %d %d\n", which, type);
           ASSERT(FALSE);
         }
       }
     }
-    #endif
+    #endif 
 
     // LB: Do not forget to increment the pc before returning!
     UpdatePC ();

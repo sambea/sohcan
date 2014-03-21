@@ -13,10 +13,21 @@
 #ifndef ADDRSPACE_H
 #define ADDRSPACE_H
 
+
 #include "copyright.h"
 #include "filesys.h"
 
+#ifdef CHANGED
+#include "../threads/synch.h"
+#include "bitmap.h"
+#endif //CHANGED
+
 #define UserStackSize		1024	// increase this as necessary!
+
+#ifdef CHANGED
+#define PAGES_PER_THREAD 3
+#endif
+
 
 class AddrSpace
 {
@@ -31,12 +42,25 @@ class AddrSpace
 
     void SaveState ();		// Save/restore address space-specific
     void RestoreState ();	// info on a context switch 
+#ifdef CHANGED
+	int GetNumThreads();
+	void IncrNumThreads();
+	void DecrNumThreads();
+	BitMap *bitMap;
+	int Allocate();
+	void Desallocate(int addr);
+#endif
 
   private:
       TranslationEntry * pageTable;	// Assume linear page table translation
     // for now!
     unsigned int numPages;	// Number of pages in the virtual 
     // address space
+#ifdef CHANGED
+	Semaphore *mutexNumThreads;
+	int numThreads; // number of current threads 
+	Semaphore *mutexBitMap;
+#endif
 };
 
 #endif // ADDRSPACE_H

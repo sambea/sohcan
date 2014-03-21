@@ -19,6 +19,8 @@
 #include "copyright.h"
 #include "post.h"
 
+#include "thread.h"
+
 #include <strings.h> /* for bzero */
 
 //----------------------------------------------------------------------

@@ -119,6 +119,13 @@ AddrSpace::AddrSpace (OpenFile * executable)
 			       [noffH.initData.virtualAddr]),
 			      noffH.initData.size, noffH.initData.inFileAddr);
       }
+	#ifdef CHANGED
+	mutexNumThreads = new Semaphore("numThreads", 1);
+	numThreads = 1;
+	mutexBitMap = new Semaphore("bitmap", 1);
+	int nbThreads = UserStackSize / PAGES_PER_THREAD - 1; // -1 for "main" thread
+	bitMap = new BitMap(nbThreads);
+#endif
 
 }
 
@@ -195,3 +202,40 @@ AddrSpace::RestoreState ()
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
 }
+
+#ifdef CHANGED
+
+int AddrSpace::GetNumThreads()
+{
+	return numThreads;
+}
+
+void AddrSpace::IncrNumThreads()
+{
+	mutexNumThreads->P();
+	numThreads++;
+	mutexNumThreads->V();
+}
+
+void AddrSpace::DecrNumThreads()
+{
+	mutexNumThreads->P();
+	numThreads--;
+	mutexNumThreads->V();
+}
+
+int AddrSpace::Allocate()
+{
+	mutexBitMap->P();
+	int memSpace = bitMap->Find();
+	mutexBitMap->V();
+	return memSpace;
+}
+
+void AddrSpace::Desallocate(int addr)
+{
+	mutexBitMap->P();
+	bitMap->Clear(addr);
+	mutexBitMap->V();
+}
+#endif

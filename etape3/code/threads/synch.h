@@ -18,7 +18,10 @@
 #define SYNCH_H
 
 #include "copyright.h"
+#ifdef CHANGED
+#else
 #include "thread.h"
+#endif
 #include "list.h"
 
 // The following class defines a "semaphore" whose value is a non-negative

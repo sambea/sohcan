@@ -173,7 +173,7 @@ PutInt:
 
 .globl GetInt
 	.ent	GetInt
-PutInt:
+GetInt:
 	addiu $2,$0,SC_GetInt
 	syscall
 	j	$31
