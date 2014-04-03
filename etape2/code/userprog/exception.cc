@@ -91,7 +91,7 @@ ExceptionHandler (ExceptionType which)
         }
 
         case SC_PutChar: {
-          DEBUG('a', "PutChar, initiated by user program.\n");
+          DEBUG('a', "PutChar.\n");
           // On récupère le premier paramètre
           char c = (char)(machine->ReadRegister(4));
           // on l'affiche dans grâce à synchconsole
@@ -106,8 +106,12 @@ ExceptionHandler (ExceptionType which)
         case SC_PutString: {
 				DEBUG('a', "PutString.\n");
 				char* str = new char[MAX_STRING_SIZE];
+
+				//bzero(str,MAX_STRING_SIZE);
 				copyStringFromMachine(machine->ReadRegister(4), str, MAX_STRING_SIZE);
+				//printf("appel de putstring\n");
 				synchconsole->SynchPutString(str);
+				//printf("retour de putstring\n");
 				delete [] str;
 				break;
 		    }
@@ -121,14 +125,18 @@ ExceptionHandler (ExceptionType which)
 			}
         case SC_PutInt: {
           DEBUG('a', "PutInt, initiated by user program.\n");
-          // le premier est la valeur int
           int value = machine->ReadRegister(4);
           synchconsole->SynchPutInt(value);
           break;
         }
         case SC_GetInt: {
           DEBUG('a', "GetInt, initiated by user program.\n");
-          int value = synchconsole->SynchGetInt();
+	/*int *recup = new int;
+	*recup = machine->ReadRegister(4);
+	synchconsole->SynchGetInt(recup);
+	delete recup;
+	break;*/       
+	int value = synchconsole->SynchGetInt();
           machine->WriteRegister(2, value);
           break;
         }
@@ -152,39 +160,30 @@ ExceptionHandler (ExceptionType which)
 // copy at most size characters
 void copyStringFromMachine(int from, char *to, unsigned size)
 {
-	unsigned int i = 0;
-	int read = 0;
-	while (i < size)
-	{
-		if (machine->ReadMem(from + i, 1, &read))
-		{
-			to[i] = (char)read;
-			if (to[i] == '\0')
-				break;
-		}
-		i++;
+	unsigned i = 0;
+	int tmp;
+	for(i = 0; i < size ; i++){
+		if(machine->ReadMem(from + i, 1, &tmp))
+		to[i]=tmp;
 	}
-	if (i == size && to[i-1] != '\0')
-	{
-		to[i] = '\0';
+	//si le message ne se finit pas par '\0'...
+	if(i<size && tmp != '\0'){
+	 	to[size-1] = '\0';
 	}
 }
-
 
 // copy a string from Linux to MIPS machine
 // copy at most size characters
 void copyStringToMachine(char* from, int to, unsigned size)
 {
-	unsigned int i = 0;
-	while (i < size)
-	{
-		if (from[i] == '\0' || from[i] == EOF)
-			break;
-		machine->WriteMem(to+i, 1, from[i]);
-		i++;
-	}
-	if (i == size)
-		machine->WriteMem(to+i, 1, (int)'\0');
+  int tmp;
+  unsigned int i;
+  for(i = 0; i < size - 1; i++){
+  	tmp = from[i];
+   	machine->WriteMem(to + i, 1, tmp);
+  }
+  tmp = '\0';
+  machine->WriteMem(to + i, 1, tmp);
 
 }
 #endif

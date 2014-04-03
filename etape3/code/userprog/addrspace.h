@@ -43,12 +43,13 @@ class AddrSpace
     void SaveState ();		// Save/restore address space-specific
     void RestoreState ();	// info on a context switch 
 #ifdef CHANGED
+	int TSize();
 	int GetNumThreads();
 	void IncrNumThreads();
 	void DecrNumThreads();
 	BitMap *bitMap;
-	int Allocate();
-	void Desallocate(int addr);
+	int AllocateStack();
+	void DesallocateStack(int addr);
 #endif
 
   private:
@@ -58,7 +59,7 @@ class AddrSpace
     // address space
 #ifdef CHANGED
 	Semaphore *mutexNumThreads;
-	int numThreads; // number of current threads 
+	int numThreads; // nombre de threads courant 
 	Semaphore *mutexBitMap;
 #endif
 };

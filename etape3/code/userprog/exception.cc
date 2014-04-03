@@ -86,16 +86,14 @@ ExceptionHandler (ExceptionType which)
         switch (type) {
 
         case SC_Halt: {
-          DEBUG('a', "Shutdown, initiated by user program.\n");
+          DEBUG('a', "Shutdown.\n");
           interrupt->Halt();
           break;
         }
 
         case SC_PutChar: {
-          DEBUG('a', "PutChar, initiated by user program.\n");
-          // On récupère le premier paramètre
+          DEBUG('a', "PutChar.\n");
           char c = (char)(machine->ReadRegister(4));
-          // on l'affiche dans grâce à synchconsole
           synchconsole->SynchPutChar(c);
           break;
         }
@@ -121,14 +119,13 @@ ExceptionHandler (ExceptionType which)
 				break;
 			}
         case SC_PutInt: {
-          DEBUG('a', "PutInt, initiated by user program.\n");
-          // le premier est la valeur int
+          DEBUG('a', "PutInt .\n");
           int value = machine->ReadRegister(4);
           synchconsole->SynchPutInt(value);
           break;
         }
         case SC_GetInt: {
-          DEBUG('a', "GetInt, initiated by user program.\n");
+          DEBUG('a', "GetInt .\n");
           int value = synchconsole->SynchGetInt();
           machine->WriteRegister(2, value);
           break;
@@ -149,7 +146,7 @@ ExceptionHandler (ExceptionType which)
 	 currentThread->space->DecrNumThreads(); 
 	 while (currentThread->space->GetNumThreads() != 0)
 	  currentThread->Yield();
-	  DEBUG('a', "Exit, initiated by user program\n");
+	  DEBUG('a', "Exit.\n");
 	  interrupt->Halt();
 	  break;
          }

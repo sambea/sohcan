@@ -123,9 +123,9 @@ AddrSpace::AddrSpace (OpenFile * executable)
 	mutexNumThreads = new Semaphore("numThreads", 1);
 	numThreads = 1;
 	mutexBitMap = new Semaphore("bitmap", 1);
-	int nbThreads = UserStackSize / PAGES_PER_THREAD - 1; // -1 for "main" thread
-	bitMap = new BitMap(nbThreads);
-#endif
+	int nbThreads = UserStackSize / PAGES_PER_THREAD - 1; // -1 car on ne compte le thread "main" 
+	bitMap = new BitMap(nbThreads);  //initialisation du bitmap au nombre de threads
+#endif 
 
 }
 
@@ -205,11 +205,18 @@ AddrSpace::RestoreState ()
 
 #ifdef CHANGED
 
+
+int AddrSpace::TSize()
+{
+	return numPages * PageSize; //nombre de threads courant * taille d'une page
+}
+
 int AddrSpace::GetNumThreads()
 {
 	return numThreads;
 }
 
+//incrementer le nbre de threads
 void AddrSpace::IncrNumThreads()
 {
 	mutexNumThreads->P();
@@ -217,6 +224,7 @@ void AddrSpace::IncrNumThreads()
 	mutexNumThreads->V();
 }
 
+//décrementer le nbre de threads
 void AddrSpace::DecrNumThreads()
 {
 	mutexNumThreads->P();
@@ -224,7 +232,8 @@ void AddrSpace::DecrNumThreads()
 	mutexNumThreads->V();
 }
 
-int AddrSpace::Allocate()
+//allocation de la pile
+int AddrSpace::AllocateStack()
 {
 	mutexBitMap->P();
 	int memSpace = bitMap->Find();
@@ -232,7 +241,9 @@ int AddrSpace::Allocate()
 	return memSpace;
 }
 
-void AddrSpace::Desallocate(int addr)
+
+//liberation de la pile
+void AddrSpace::DesallocateStack(int addr)
 {
 	mutexBitMap->P();
 	bitMap->Clear(addr);

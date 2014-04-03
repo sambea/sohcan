@@ -6,5 +6,6 @@ int main() {
   PutString("Nombre +10 = ");
   PutInt(nombre+10);
   PutChar('\n');
+  Halt();
   return 0;
 }

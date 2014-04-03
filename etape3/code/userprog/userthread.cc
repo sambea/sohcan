@@ -15,7 +15,8 @@ return userThreadP;
 }
 
 
-void InitRegistersWithParam(int f, int arg) {
+//initialisation des registres avec les paramètres (fonction non fonctionnelle)
+/*void InitRegistersWithParam(int f, int arg) {
   
     // placement de PC au début de la fonction à executer
     machine->WriteRegister (PCReg, f);
@@ -26,14 +27,15 @@ void InitRegistersWithParam(int f, int arg) {
     // of branch delay possibility
     machine->WriteRegister (NextPCReg, f+4);  //branchement à l'instruction suivante
     machine->WriteRegister (RetAddrReg, currentThread->loadRetour()); //
-    
-    // On place StackReg 3 pages en dessous du pointeur du
+
+    // Placement de StackReg 3 pages en dessous du pointeur du
     // programme principal
+
     machine->WriteRegister (StackReg, machine->ReadRegister(StackReg) - currentThread->getStackAddr()*PAGES_PER_THREAD*PageSize);
     DEBUG ('a', "Initializing stack register to %d\n",
            machine->ReadRegister(StackReg) - currentThread->getStackAddr()*PAGES_PER_THREAD*PageSize);
 
-}
+}*/
 
 
 
@@ -51,7 +53,7 @@ int do_UserThreadCreate(int f, int arg)
 	newThread->space = currentThread->space;
 	
 	// verification qu'il y a assez de place pour le thread
-	int tid = newThread->space->Allocate();
+	int tid = newThread->space->AllocateStack();
 	if (tid != -1)
 	{
 		argThread->IdThread = tid;
@@ -69,21 +71,36 @@ int do_UserThreadExit()
 {
 	currentThread->space->DecrNumThreads();
 	currentThread->Finish();
-	currentThread->space->Desallocate(currentThread->tid);
+	currentThread->space->DesallocateStack(currentThread->tid);
 	return 0;
 }
 
 void StartUserThread(int f)
 {	
-  //Recuperation des parametres
-  ThreadUserParam *param = (ThreadUserParam *) f;
-  
-  //Initialisation des registres
+ //restauration de l'espace mémoire  
+  //info on a context switch 
+  currentThread->space->RestoreState();
+  //initialisation des registres
   currentThread->space->InitRegisters();
-  InitRegistersWithParam(param->f, param->arg);
-  
-  //Lancement de l'interprete
-  machine->Run();
+	
+	ThreadUserParam * tu = new ThreadUserParam;
+	tu = (ThreadUserParam*)f;
+	
+	
+	currentThread->tid = tu->IdThread;
+	
+		
+	int new_stack_reg = currentThread->space->TSize() - (PAGES_PER_THREAD * PageSize) * tu->IdThread;
+	//new_stack_reg devient le pointeur de pile courant
+	machine->WriteRegister(StackReg, new_stack_reg);
+	 // placement de PC au début de la fonction à executer
+	machine->WriteRegister(PCReg, tu->f);
+	 //branchement à l'instruction suivante
+	machine->WriteRegister(NextPCReg, tu->f+4);
+	 // placement de l'argument dans le registre 4
+	machine->WriteRegister(4,tu->arg);
+	
+	machine->Run();
 }
 
 

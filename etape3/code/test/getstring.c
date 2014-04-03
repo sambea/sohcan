@@ -1,7 +1,7 @@
 #include "syscall.h"
 
 int main() {
-  PutString("Veuillez saisir une phrase (max = 100) : ");
+  PutString("Veuillez saisir une phrase de 100 caractères maximum: ");
   char buffer[100];
   GetString(buffer,100);
   PutString("\nVoici la phrase : ");

@@ -7,8 +7,8 @@
 
 static Semaphore *readAvail;
 static Semaphore *writeDone;
-static Semaphore *stringWrite;
-static Semaphore *stringRead;
+static Semaphore *handleWrite;
+static Semaphore *handleRead;
 
 static void ReadAvail(int arg) {
     readAvail->V();
@@ -23,8 +23,8 @@ SynchConsole::SynchConsole(char *readFile, char *writeFile)
     readAvail = new Semaphore("read avail", 0);
     writeDone = new Semaphore("write done", 0);
     console = new Console (readFile, writeFile, ReadAvail, WriteDone, 0);
-	stringWrite = new Semaphore("write string", 1);
-	stringRead = new Semaphore("read string", 1);
+	handleWrite = new Semaphore("write string", 1);
+	handleRead = new Semaphore("read string", 1);
 }
 
 SynchConsole::~SynchConsole()
@@ -32,8 +32,8 @@ SynchConsole::~SynchConsole()
     delete console;
     delete writeDone;
     delete readAvail;
-    delete stringWrite;
-    delete stringRead;
+    delete handleWrite;
+    delete handleRead;
 }
 
 void SynchConsole::SynchPutChar(const char ch)
@@ -50,19 +50,19 @@ char SynchConsole::SynchGetChar()
 
 void SynchConsole::SynchPutString(const char s[])
 {
-    stringWrite->P();
+    handleWrite->P();
 	int i = 0;
 	while (s[i] != '\0')
 	{
 		SynchPutChar(s[i++]);
 	}
-	stringWrite->V();
+	handleWrite->V();
 
 }
 
 void SynchConsole::SynchGetString(char *s, int n)
 {
-	stringRead->P();
+	handleRead->P();
 	int i = 0;
 	while (i < n)
 	{
@@ -72,28 +72,28 @@ void SynchConsole::SynchGetString(char *s, int n)
 		i++;
 	}
 	s[n-1] = '\0';
-	stringRead->V();
+	handleRead->V();
 }
 
 
-void SynchConsole::SynchGetString(char *s, int n,char delim)
+void SynchConsole::SynchGetString(char *s, int n,char end)
 {
-	stringRead->P();
+	handleRead->P();
 	int i = 0;
 	while (i < n)
 	{
 		s[i] = SynchGetChar();
-		if (s[i] == delim || s[i] == '\0' || s[i] == EOF)
+		if (s[i] == end || s[i] == '\0' || s[i] == EOF)
 			break;
 		i++;
 	}
 	s[n-1] = '\0';
-	stringRead->V();
+	handleRead->V();
 }
 
 void SynchConsole::SynchPutInt(int value) {
   char * buffer = new char[MAX_STRING_SIZE];
-  // on écrit dans le buffer la valeur avec sprintf
+  //écriture dans le buffer la valeur avec sprintf
   snprintf(buffer,MAX_STRING_SIZE, "%d", value);
   this->SynchPutString(buffer);
   delete [] buffer;
