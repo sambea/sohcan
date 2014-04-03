@@ -205,18 +205,19 @@ AddrSpace::RestoreState ()
 
 #ifdef CHANGED
 
-
+//taille courante de la pile
 int AddrSpace::TSize()
 {
 	return numPages * PageSize; //nombre de threads courant * taille d'une page
 }
 
+//retourne le nombre courant de threads
 int AddrSpace::GetNumThreads()
 {
 	return numThreads;
 }
 
-//incrementer le nbre de threads
+//incremente le nbre de threads
 void AddrSpace::IncrNumThreads()
 {
 	mutexNumThreads->P();
@@ -224,7 +225,7 @@ void AddrSpace::IncrNumThreads()
 	mutexNumThreads->V();
 }
 
-//décrementer le nbre de threads
+//décremente le nbre de threads
 void AddrSpace::DecrNumThreads()
 {
 	mutexNumThreads->P();
@@ -232,7 +233,7 @@ void AddrSpace::DecrNumThreads()
 	mutexNumThreads->V();
 }
 
-//allocation de la pile
+//allocation de la pile thread
 int AddrSpace::AllocateStack()
 {
 	mutexBitMap->P();
@@ -242,7 +243,7 @@ int AddrSpace::AllocateStack()
 }
 
 
-//liberation de la pile
+//liberation de la pile thread
 void AddrSpace::DesallocateStack(int addr)
 {
 	mutexBitMap->P();

@@ -130,13 +130,8 @@ ExceptionHandler (ExceptionType which)
           break;
         }
         case SC_GetInt: {
-          DEBUG('a', "GetInt, initiated by user program.\n");
-	/*int *recup = new int;
-	*recup = machine->ReadRegister(4);
-	synchconsole->SynchGetInt(recup);
-	delete recup;
-	break;*/       
-	int value = synchconsole->SynchGetInt();
+          DEBUG('a', "GetInt, initiated by user program.\n");       
+	  int value = synchconsole->SynchGetInt();
           machine->WriteRegister(2, value);
           break;
         }

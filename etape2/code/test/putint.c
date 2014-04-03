@@ -1,11 +1,15 @@
 #include "syscall.h"
 
+#define N 16 
+
 int main()
 {
-    int nombre=11;
-    PutString("My Number=");
-    PutInt(nombre);
+  int i;
+for (i=0;i<N;i++) {
+    //PutString("My Number=");
+    PutInt(i);
     PutChar('\n');
-    Halt();
 }
-
+Halt();
+return 0;
+}

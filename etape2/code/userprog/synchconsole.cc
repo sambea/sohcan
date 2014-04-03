@@ -13,6 +13,7 @@ static Semaphore *handleRead;
 static Semaphore *handleWriteInt;
 static Semaphore *handleReadInt;
 
+
 static void ReadAvail(int arg) { readAvail->V(); }
 static void WriteDone(int arg) { writeDone->V(); }
 
@@ -22,6 +23,7 @@ SynchConsole::SynchConsole(char *readFile, char *writeFile)
 	writeDone = new Semaphore("write done", 0);
 	console = new Console(readFile, writeFile, ReadAvail, WriteDone, 0); 
 
+	handleWrite = new Semaphore("handleWrite", 1);
 	handleWrite = new Semaphore("handleWrite", 1);
 	handleRead = new Semaphore("handleRead", 1);
 	handleWriteInt = new Semaphore("handleWriteInt", 1);
@@ -44,7 +46,6 @@ void SynchConsole::SynchPutChar(const char ch)
 
 char SynchConsole::SynchGetChar()
 {
-
 	readAvail->P ();
 	return console->GetChar ();
 
